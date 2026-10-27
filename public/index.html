@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ЧИО ЧИО — Экспресс-парикмахерская | Каждая 3-я стрижка БЕСПЛАТНО</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="/style.css">
+  <link rel="icon" type="image/png" href="/logo.png">
+</head>
+<body class="bg-[#0a0a0c] text-white min-h-screen flex flex-col font-sans selection:bg-[#e61e2b] selection:text-white">
+
+  <!-- Subtle, Eye-Friendly Info Strip (Replaced the bright red banner) -->
+  <div class="border-b border-[#1c1c24] bg-[#0d0d12] text-gray-400 text-xs py-2 px-4">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <span class="inline-block w-2 h-2 rounded-full bg-red-500/80"></span>
+        <span class="text-gray-300 font-medium">Программа лояльности:</span>
+        <span class="text-gray-400">каждая 3-я стрижка — 0 ₽ (бесплатно)</span>
+      </div>
+      <div class="hidden sm:flex items-center gap-2 text-gray-400 text-[11px]">
+        <span>50% от суммы стрижки перечисляется напрямую вашему мастеру</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Bar -->
+  <header class="border-b border-[#22222a] bg-[#101014]/90 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+      <!-- Brand Logo & Title -->
+      <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('terminal')">
+        <div class="bg-white p-1 rounded-xl shadow-md border border-[#2a2a35] flex items-center justify-center w-12 h-12 overflow-hidden">
+          <img src="/logo.png" alt="ЧИО ЧИО" class="w-full h-full object-contain">
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-black text-xl tracking-tight text-white uppercase">ЧИО ЧИО</span>
+            <span class="bg-[#e61e2b] text-white text-[10px] font-extrabold uppercase px-2 py-0.5 rounded tracking-wider">Экспресс</span>
+          </div>
+          <p class="text-xs text-gray-400">Японские стандарты • Стрижка за 15 минут</p>
+        </div>
+      </div>
+
+      <!-- Main Navigation Tabs -->
+      <nav class="flex items-center bg-[#181820] p-1 rounded-xl border border-[#272733] overflow-x-auto text-xs sm:text-sm">
+        <button id="nav-btn-terminal" onclick="switchTab('terminal')" class="nav-btn px-3 sm:px-4 py-2 rounded-lg font-medium transition flex items-center gap-2 bg-[#e61e2b] text-white shadow">
+          <i data-lucide="scissors" class="w-4 h-4"></i>
+          <span>Оплата стрижки</span>
+        </button>
+        <button id="nav-btn-loyalty" onclick="switchTab('loyalty')" class="nav-btn px-3 sm:px-4 py-2 rounded-lg font-medium transition flex items-center gap-2 text-gray-400 hover:text-white">
+          <i data-lucide="gift" class="w-4 h-4"></i>
+          <span>Карта лояльности</span>
+        </button>
+        <button id="nav-btn-master" onclick="switchTab('master')" class="nav-btn px-3 sm:px-4 py-2 rounded-lg font-medium transition flex items-center gap-2 text-gray-400 hover:text-white">
+          <i data-lucide="user-check" class="w-4 h-4"></i>
+          <span>Кабинет мастера</span>
+        </button>
+        <button id="nav-btn-admin" onclick="switchTab('admin')" class="nav-btn px-3 sm:px-4 py-2 rounded-lg font-medium transition flex items-center gap-2 text-gray-400 hover:text-white">
+          <i data-lucide="shield" class="w-4 h-4"></i>
+          <span>Админ-панель</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ====================================================================
+         TAB 1: ТЕРМИНАЛ ЭКСПРЕСС-ОПЛАТЫ (Клиентский флоу)
+         ==================================================================== -->
+    <section id="tab-terminal" class="tab-content">
+      
+      <!-- Stepper Header -->
+      <div class="mb-8">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-black text-white flex items-center gap-3">
+              <span>Экспресс-терминал самообслуживания</span>
+              <span class="bg-red-500/10 text-red-500 border border-red-500/30 text-xs px-2.5 py-1 rounded-full font-bold">Чио Чио</span>
+            </h1>
+            <p class="text-gray-400 text-sm mt-1">Оплатите стрижку после завершения в 4 простых шага</p>
+          </div>
+          <!-- Calm, subtle loyalty pill -->
+          <div class="hidden md:flex items-center gap-2.5 bg-[#14141c] border border-[#242432] px-3.5 py-2 rounded-xl text-xs">
+            <span class="w-2 h-2 rounded-full bg-red-500"></span>
+            <span class="text-gray-300 font-medium">1-я (500 ₽) ➔ 2-я (500 ₽) ➔ <span class="text-white font-bold">3-я (0 ₽ БЕСПЛАТНО)</span></span>
+          </div>
+        </div>
+
+        <!-- Progress Steps: 1.Телефон -> 2.Мастер -> 3.Стрижка -> 4.Оплата -->
+        <div class="grid grid-cols-4 gap-2 sm:gap-3 max-w-3xl mx-auto">
+          <div id="step-indicator-1" class="flex items-center gap-2 p-2 sm:p-2.5 rounded-xl bg-[#e61e2b]/15 border border-[#e61e2b] text-white">
+            <span class="w-6 h-6 rounded-full bg-[#e61e2b] text-white font-bold text-xs flex items-center justify-center flex-shrink-0">1</span>
+            <span class="text-xs sm:text-sm font-semibold truncate">Телефон</span>
+          </div>
+          <div id="step-indicator-2" class="flex items-center gap-2 p-2 sm:p-2.5 rounded-xl bg-[#14141b] border border-[#242430] text-gray-400">
+            <span class="w-6 h-6 rounded-full bg-[#20202a] text-gray-300 font-bold text-xs flex items-center justify-center flex-shrink-0">2</span>
+            <span class="text-xs sm:text-sm font-semibold truncate">Мастер</span>
+          </div>
+          <div id="step-indicator-3" class="flex items-center gap-2 p-2 sm:p-2.5 rounded-xl bg-[#14141b] border border-[#242430] text-gray-400">
+            <span class="w-6 h-6 rounded-full bg-[#20202a] text-gray-300 font-bold text-xs flex items-center justify-center flex-shrink-0">3</span>
+            <span class="text-xs sm:text-sm font-semibold truncate">Стрижка</span>
+          </div>
+          <div id="step-indicator-4" class="flex items-center gap-2 p-2 sm:p-2.5 rounded-xl bg-[#14141b] border border-[#242430] text-gray-400">
+            <span class="w-6 h-6 rounded-full bg-[#20202a] text-gray-300 font-bold text-xs flex items-center justify-center flex-shrink-0">4</span>
+            <span class="text-xs sm:text-sm font-semibold truncate">Оплата</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- WIZARD STEP 1: Phone & Loyalty Identification -->
+      <div id="wizard-step-1" class="wizard-step max-w-3xl mx-auto">
+        <div class="bg-[#14141a] border border-[#262633] rounded-2xl p-6 sm:p-8 shadow-xl">
+          <div class="text-center mb-6">
+            <div class="w-14 h-14 bg-red-600/10 border border-red-500/20 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-3">
+              <i data-lucide="phone-call" class="w-7 h-7"></i>
+            </div>
+            <h2 class="text-xl sm:text-2xl font-black text-white">Введите ваш номер телефона</h2>
+            <p class="text-gray-400 text-sm mt-1">Система автоматически проверит ваши посещения и применит скидку на 3-ю бесплатную стрижку</p>
+          </div>
+
+          <div class="space-y-4 max-w-md mx-auto">
+            <div>
+              <label for="client-phone-input" class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1.5">Номер телефона</label>
+              <div class="relative">
+                <input
+                  type="tel"
+                  id="client-phone-input"
+                  placeholder="+7 (999) 000-00-00"
+                  class="w-full bg-[#0d0d12] border-2 border-[#2b2b3a] focus:border-[#e61e2b] rounded-xl px-4 py-3.5 text-lg font-mono tracking-wider text-white placeholder-gray-500 outline-none transition"
+                  oninput="handlePhoneInput(this.value)"
+                  onkeypress="if(event.key === 'Enter') checkClientAndProceed()"
+                >
+                <div id="phone-lookup-spinner" class="hidden absolute right-3 top-3.5 text-red-500 animate-spin">
+                  <i data-lucide="loader-2" class="w-6 h-6"></i>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label for="client-name-input" class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">Ваше имя (необязательно)</label>
+              <input
+                type="text"
+                id="client-name-input"
+                placeholder="Например, Александр"
+                class="w-full bg-[#0d0d12] border border-[#272736] focus:border-[#e61e2b] rounded-xl px-4 py-2.5 text-white placeholder-gray-500 outline-none transition text-sm"
+              >
+            </div>
+
+            <!-- Quick Demo Auto-Fill Buttons -->
+            <div class="pt-2">
+              <span class="text-xs text-gray-500 block mb-2 font-medium">⚡ Быстрый тест для проверки:</span>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <button onclick="fillDemoPhone('+7 (900) 123-45-67', 'Максим (2 стрижки)')" class="bg-[#1c1c26] hover:bg-[#252533] border border-[#2e2e40] text-xs p-2 rounded-lg text-left transition flex items-center justify-between">
+                  <div>
+                    <span class="font-bold text-red-400 block">🎁 3-я стрижка!</span>
+                    <span class="text-[11px] text-gray-400">Максим (2 было)</span>
+                  </div>
+                  <i data-lucide="sparkles" class="w-4 h-4 text-red-400"></i>
+                </button>
+                <button onclick="fillDemoPhone('+7 (911) 777-88-99', 'Александр')" class="bg-[#1c1c26] hover:bg-[#252533] border border-[#2e2e40] text-xs p-2 rounded-lg text-left transition flex items-center justify-between">
+                  <div>
+                    <span class="font-bold text-gray-200 block">✂️ Новый клиент</span>
+                    <span class="text-[11px] text-gray-400">Александр (0 визитов)</span>
+                  </div>
+                  <i data-lucide="user-plus" class="w-4 h-4 text-gray-400"></i>
+                </button>
+                <button onclick="fillDemoPhone('+7 (922) 555-44-33', 'Дмитрий')" class="bg-[#1c1c26] hover:bg-[#252533] border border-[#2e2e40] text-xs p-2 rounded-lg text-left transition flex items-center justify-between">
+                  <div>
+                    <span class="font-bold text-gray-200 block">🔄 2-й цикл</span>
+                    <span class="text-[11px] text-gray-400">Дмитрий (3 визита)</span>
+                  </div>
+                  <i data-lucide="rotate-cw" class="w-4 h-4 text-gray-400"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Live Client Loyalty Card Preview -->
+            <div id="live-loyalty-preview" class="hidden mt-6 pt-6 border-t border-[#232330]">
+              <div id="live-stamp-card" class="stamp-card-container p-5 rounded-2xl">
+                <!-- Card Header -->
+                <div class="flex items-center justify-between mb-4">
+                  <div class="flex items-center gap-2">
+                    <img src="/logo.png" alt="ЧИО ЧИО" class="w-6 h-6 object-contain bg-white rounded-md p-0.5">
+                    <span class="font-extrabold text-sm uppercase tracking-wider text-white">Карта ЧИО ЧИО Лояльность</span>
+                  </div>
+                  <span id="preview-client-badge" class="badge-red text-xs px-2.5 py-0.5 rounded-full font-bold"></span>
+                </div>
+
+                <!-- 3 Stamps -->
+                <div class="grid grid-cols-3 gap-3 text-center my-3">
+                  <div id="preview-slot-1" class="stamp-slot p-3 rounded-xl border border-[#2a2a38] bg-[#121218]">
+                    <div class="w-10 h-10 mx-auto rounded-full bg-[#1b1b24] flex items-center justify-center mb-1 text-sm font-bold text-gray-400 slot-icon">1</div>
+                    <span class="text-xs font-semibold block text-gray-300">1-й визит</span>
+                    <span class="text-[10px] text-gray-500 block slot-status">Оплата</span>
+                  </div>
+                  <div id="preview-slot-2" class="stamp-slot p-3 rounded-xl border border-[#2a2a38] bg-[#121218]">
+                    <div class="w-10 h-10 mx-auto rounded-full bg-[#1b1b24] flex items-center justify-center mb-1 text-sm font-bold text-gray-400 slot-icon">2</div>
+                    <span class="text-xs font-semibold block text-gray-300">2-й визит</span>
+                    <span class="text-[10px] text-gray-500 block slot-status">Оплата</span>
+                  </div>
+                  <div id="preview-slot-3" class="stamp-slot p-3 rounded-xl border border-red-500/40 bg-red-950/20">
+                    <div class="w-10 h-10 mx-auto rounded-full bg-red-600/30 text-red-400 flex items-center justify-center mb-1 text-sm font-bold slot-icon">🎁</div>
+                    <span class="text-xs font-bold block text-red-400">3-й визит</span>
+                    <span class="text-[10px] font-bold text-white bg-red-600 px-1 rounded block mt-0.5 slot-status">0 ₽ БЕСПЛАТНО</span>
+                  </div>
+                </div>
+
+                <!-- Banner Message -->
+                <div id="preview-banner-msg" class="mt-3 text-center p-3 rounded-xl text-xs font-bold"></div>
+              </div>
+            </div>
+
+            <!-- Next Step Button: Takes to Step 2 (Master Selection) -->
+            <button
+              id="btn-step-1-next"
+              onclick="checkClientAndProceed()"
+              class="w-full btn-chio-red py-3.5 rounded-xl font-bold text-base flex items-center justify-center gap-2 mt-4"
+            >
+              <span>Выбрать мастера</span>
+              <i data-lucide="arrow-right" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- WIZARD STEP 2: CHOOSE MASTER FIRST! -->
+      <div id="wizard-step-2" class="wizard-step hidden max-w-4xl mx-auto space-y-6">
+        
+        <!-- Sticky Client Info Strip -->
+        <div class="bg-[#14141b] border border-[#242432] p-4 rounded-2xl flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-red-600/20 text-red-500 flex items-center justify-center font-bold">
+              <i data-lucide="user" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <span id="wizard-client-phone-display" class="font-mono font-bold text-white block"></span>
+              <span id="wizard-client-status-display" class="text-xs text-gray-400"></span>
+            </div>
+          </div>
+          <button onclick="goToStep(1)" class="text-xs text-gray-400 hover:text-white underline">
+            Сменить номер
+          </button>
+        </div>
+
+        <!-- Section: Choose Master -->
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="text-xl font-black text-white flex items-center gap-2">
+                <span>1. Выберите мастера, который вас подстригал</span>
+                <span class="text-red-500 text-sm font-bold">*</span>
+              </h3>
+              <p class="text-gray-400 text-xs flex items-center gap-1.5 mt-0.5">
+                <span>Нажмите на карточку мастера — и вас сразу переведет на выбор стрижки (50% чека получит выбранный мастер).</span>
+              </p>
+            </div>
+          </div>
+
+          <!-- Masters Grid -->
+          <div id="masters-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Dynamic Masters rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="flex items-center justify-between pt-4 border-t border-[#22222c]">
+          <button onclick="goToStep(1)" class="px-5 py-3 rounded-xl bg-[#171720] hover:bg-[#20202c] text-gray-300 font-medium text-sm flex items-center gap-2 transition">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            <span>Назад к номеру</span>
+          </button>
+          <button id="btn-step-2-next" onclick="confirmMasterAndProceedToServices()" class="btn-chio-red px-8 py-3.5 rounded-xl font-bold text-sm flex items-center gap-2">
+            <span>Выбрать стрижку</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- WIZARD STEP 3: CHOOSE HAIRCUT / SERVICE (TRANSITIONED FROM MASTER) -->
+      <div id="wizard-step-3" class="wizard-step hidden max-w-4xl mx-auto space-y-6">
+        
+        <!-- Top Strip Showing Selected Master with Quick Change Option -->
+        <div class="bg-[#14141b] border border-[#272738] p-4 rounded-2xl flex flex-wrap items-center justify-between gap-3 shadow-md">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl overflow-hidden border-2 border-red-500 shadow-md flex-shrink-0">
+              <img id="step3-selected-master-avatar" src="" alt="Мастер" class="w-full h-full object-cover">
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-400">Ваш мастер:</span>
+                <span id="step3-selected-master-name" class="font-black text-white text-base"></span>
+                <span class="bg-red-500/10 text-red-400 text-[10px] font-bold px-2 py-0.5 rounded border border-red-500/20">50% мастеру</span>
+              </div>
+              <span id="step3-selected-master-spec" class="text-xs text-gray-400"></span>
+            </div>
+          </div>
+          <button onclick="goToStep(2)" class="px-3 py-1.5 bg-[#1f1f2c] hover:bg-[#29293a] text-gray-300 hover:text-white border border-[#333345] text-xs font-semibold rounded-xl flex items-center gap-1.5 transition">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+            <span>Сменить мастера</span>
+          </button>
+        </div>
+
+        <!-- Section: Choose Haircut / Service -->
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="text-xl font-black text-white flex items-center gap-2">
+                <span>2. Выберите выполненную стрижку или услугу</span>
+                <span class="text-red-500 text-sm font-bold">*</span>
+              </h3>
+              <p class="text-gray-400 text-xs">Каждая стрижка выполняется по фирменной экспресс-технологии ЧИО ЧИО за 15 минут</p>
+            </div>
+          </div>
+          <div id="services-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Dynamic Services rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="flex items-center justify-between pt-4 border-t border-[#22222c]">
+          <button onclick="goToStep(2)" class="px-5 py-3 rounded-xl bg-[#171720] hover:bg-[#20202c] text-gray-300 font-medium text-sm flex items-center gap-2 transition">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            <span>Назад к выбору мастера</span>
+          </button>
+          <button id="btn-step-3-next" onclick="prepareCheckoutStep()" class="btn-chio-red px-8 py-3.5 rounded-xl font-bold text-sm flex items-center gap-2">
+            <span>Перейти к расчету и оплате</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- WIZARD STEP 4: CALCULATION & PAYMENT (50% to Master) -->
+      <div id="wizard-step-4" class="wizard-step hidden max-w-2xl mx-auto">
+        <div class="bg-[#14141a] border border-[#272735] rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+          
+          <div class="text-center pb-4 border-b border-[#232330]">
+            <span class="text-xs font-bold tracking-widest uppercase text-red-500">ЧИО ЧИО • Экспресс Касса</span>
+            <h2 class="text-2xl font-black text-white mt-1">Итоговый расчет стрижки</h2>
+            <p class="text-gray-400 text-xs mt-1">Проверьте данные перед оплатой</p>
+          </div>
+
+          <!-- FREE HAIRCUT PROMO BANNER (IF 3RD VISIT) -->
+          <div id="free-cut-celebration-banner" class="hidden p-4 rounded-2xl bg-[#1b1518] border border-red-500/60 text-center">
+            <span class="text-2xl block mb-1">🎁 ✂️ 🎉</span>
+            <h4 class="text-base font-black text-white uppercase tracking-wide">Ваша 3-я стрижка — БЕСПЛАТНАЯ!</h4>
+            <p class="text-xs text-gray-300 mt-1">По программе лояльности ЧИО ЧИО стоимость для вас составляет 0 рублей!</p>
+            <span class="inline-block mt-2 bg-red-600 text-white font-extrabold text-xs px-3 py-1 rounded-full uppercase">Скидка 100% применена</span>
+          </div>
+
+          <!-- Summary Breakdown Table -->
+          <div class="bg-[#0f0f14] p-5 rounded-2xl border border-[#22222e] space-y-3">
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-gray-400">Клиент (телефон):</span>
+              <span id="checkout-summary-phone" class="font-mono font-bold text-white"></span>
+            </div>
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-gray-400">Выбранный мастер:</span>
+              <div class="flex items-center gap-2">
+                <span id="checkout-summary-master" class="font-bold text-white"></span>
+                <span class="bg-red-500/10 text-red-400 text-[10px] px-2 py-0.5 rounded font-bold border border-red-500/20">50% мастеру</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-gray-400">Выбранная стрижка:</span>
+              <span id="checkout-summary-service" class="font-bold text-white text-right"></span>
+            </div>
+
+            <div class="border-t border-[#1e1e28] pt-3 space-y-2">
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-gray-400">Базовая стоимость:</span>
+                <span id="checkout-summary-orig-price" class="text-gray-300 font-mono"></span>
+              </div>
+              <div id="checkout-summary-discount-row" class="hidden flex items-center justify-between text-sm text-red-400">
+                <span class="flex items-center gap-1 font-bold">
+                  <i data-lucide="tag" class="w-4 h-4"></i>
+                  <span>Скидка (3-я стрижка):</span>
+                </span>
+                <span id="checkout-summary-discount-val" class="font-mono font-bold"></span>
+              </div>
+              <div class="flex items-center justify-between text-lg font-black pt-2 border-t border-[#232330]">
+                <span class="text-white">К ОПЛАТЕ:</span>
+                <span id="checkout-summary-final-price" class="text-2xl text-red-500 font-mono"></span>
+              </div>
+            </div>
+
+            <!-- Transparency notice on 50% split -->
+            <div class="bg-[#171720] p-3 rounded-xl border border-[#262635] text-xs text-gray-300 flex items-start gap-2.5 mt-2">
+              <i data-lucide="info" class="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5"></i>
+              <div>
+                <span class="text-white font-bold block mb-0.5">Справедливое распределение 50 / 50:</span>
+                <span id="checkout-split-explanation">Из суммы стрижки 50% сразу зачисляется мастеру в личный баланс, а 50% поступает салону ЧИО ЧИО.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Method Selection -->
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">Выберите способ оплаты</label>
+            <div class="grid grid-cols-3 gap-3">
+              <button type="button" onclick="selectPayMethod('sbp_qr')" id="pm-sbp_qr" class="pay-method-btn p-3 rounded-xl border border-red-500 bg-[#220a0d] text-left transition flex flex-col justify-between">
+                <div class="flex items-center justify-between w-full mb-1">
+                  <span class="text-xs font-bold text-white">СБП</span>
+                  <span class="text-[10px] bg-red-600 text-white px-1.5 py-0.5 rounded font-bold">QR</span>
+                </div>
+                <span class="text-[10px] text-gray-400">Быстро через банк</span>
+              </button>
+              <button type="button" onclick="selectPayMethod('card')" id="pm-card" class="pay-method-btn p-3 rounded-xl border border-[#272736] bg-[#121218] text-left transition flex flex-col justify-between">
+                <div class="flex items-center justify-between w-full mb-1">
+                  <span class="text-xs font-bold text-gray-300">Карта</span>
+                  <i data-lucide="credit-card" class="w-3.5 h-3.5 text-gray-400"></i>
+                </div>
+                <span class="text-[10px] text-gray-400">Терминал / Мир</span>
+              </button>
+              <button type="button" onclick="selectPayMethod('cash')" id="pm-cash" class="pay-method-btn p-3 rounded-xl border border-[#272736] bg-[#121218] text-left transition flex flex-col justify-between">
+                <div class="flex items-center justify-between w-full mb-1">
+                  <span class="text-xs font-bold text-gray-300">Купюры</span>
+                  <i data-lucide="banknote" class="w-3.5 h-3.5 text-gray-400"></i>
+                </div>
+                <span class="text-[10px] text-gray-400">Купюроприемник</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Simulated SBP QR display (if SBP chosen) -->
+          <div id="sbp-qr-box" class="p-4 bg-[#0d0d12] border border-[#252533] rounded-2xl text-center">
+            <span class="text-xs text-gray-400 block mb-2 font-medium">Отсканируйте QR-код в приложении любого банка:</span>
+            <div class="inline-block p-3 bg-white rounded-xl shadow-lg my-1">
+              <svg id="dynamic-qr-svg" class="w-36 h-36" viewBox="0 0 100 100" fill="black">
+                <rect width="100" height="100" fill="white"/>
+                <rect x="5" y="5" width="25" height="25" fill="black"/>
+                <rect x="8" y="8" width="19" height="19" fill="white"/>
+                <rect x="11" y="11" width="13" height="13" fill="black"/>
+                <rect x="70" y="5" width="25" height="25" fill="black"/>
+                <rect x="73" y="8" width="19" height="19" fill="white"/>
+                <rect x="76" y="11" width="13" height="13" fill="black"/>
+                <rect x="5" y="70" width="25" height="25" fill="black"/>
+                <rect x="8" y="73" width="19" height="19" fill="white"/>
+                <rect x="11" y="76" width="13" height="13" fill="black"/>
+                <rect x="35" y="10" width="5" height="15" fill="black"/>
+                <rect x="45" y="5" width="10" height="5" fill="black"/>
+                <rect x="55" y="15" width="5" height="10" fill="black"/>
+                <rect x="35" y="35" width="30" height="30" fill="#e61e2b"/>
+                <rect x="42" y="42" width="16" height="16" fill="white"/>
+                <text x="50" y="53" font-size="8" font-family="sans-serif" font-weight="bold" fill="#e61e2b" text-anchor="middle">ЧИО</text>
+                <rect x="10" y="35" width="5" height="20" fill="black"/>
+                <rect x="20" y="45" width="10" height="5" fill="black"/>
+                <rect x="75" y="35" width="15" height="5" fill="black"/>
+                <rect x="70" y="45" width="5" height="20" fill="black"/>
+                <rect x="85" y="55" width="5" height="15" fill="black"/>
+                <rect x="35" y="75" width="15" height="5" fill="black"/>
+                <rect x="55" y="70" width="5" height="25" fill="black"/>
+                <rect x="65" y="80" width="25" height="5" fill="black"/>
+                <rect x="75" y="70" width="5" height="10" fill="black"/>
+              </svg>
+            </div>
+            <div class="flex items-center justify-center gap-2 mt-2 text-xs text-gray-400">
+              <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+              <span>Ожидание подтверждения оплаты...</span>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex items-center justify-between pt-2">
+            <button onclick="goToStep(3)" class="px-5 py-3 rounded-xl bg-[#171720] hover:bg-[#20202c] text-gray-300 font-medium text-sm flex items-center gap-2 transition">
+              <i data-lucide="arrow-left" class="w-4 h-4"></i>
+              <span>Изменить стрижку</span>
+            </button>
+            <button
+              id="btn-confirm-payment"
+              onclick="executePayment()"
+              class="btn-chio-red px-8 py-3.5 rounded-xl font-bold text-base flex items-center gap-2"
+            >
+              <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+              <span id="btn-pay-label">Оплатить и получить чек</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ====================================================================
+         TAB 2: МОЯ КАРТА ЛОЯЛЬНОСТИ (Проверка по телефону)
+         ==================================================================== -->
+    <section id="tab-loyalty" class="tab-content hidden max-w-4xl mx-auto space-y-6">
+      
+      <div class="text-center max-w-xl mx-auto mb-6">
+        <div class="w-14 h-14 bg-red-600/10 border border-red-500/20 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-3">
+          <i data-lucide="gift" class="w-7 h-7"></i>
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-black text-white">Программа лояльности ЧИО ЧИО</h2>
+        <p class="text-gray-400 text-sm mt-1">Проверьте количество ваших стрижек по номеру телефона</p>
+      </div>
+
+      <!-- Phone Lookup Form -->
+      <div class="bg-[#14141a] border border-[#252533] p-5 rounded-2xl max-w-md mx-auto shadow-lg">
+        <label for="loyalty-check-phone" class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">Введите ваш номер телефона</label>
+        <div class="flex gap-2">
+          <input
+            type="tel"
+            id="loyalty-check-phone"
+            placeholder="+7 (999) 000-00-00"
+            class="flex-1 bg-[#0d0d12] border border-[#2b2b3a] focus:border-[#e61e2b] rounded-xl px-4 py-2.5 text-white font-mono placeholder-gray-500 outline-none transition text-sm"
+            onkeypress="if(event.key === 'Enter') lookupLoyaltyCard()"
+          >
+          <button onclick="lookupLoyaltyCard()" class="btn-chio-red px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center gap-1.5">
+            <i data-lucide="search" class="w-4 h-4"></i>
+            <span>Найти</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Loyalty Card Result Container -->
+      <div id="loyalty-card-result" class="hidden space-y-6">
+        
+        <!-- Big Loyalty Card -->
+        <div class="stamp-card-container rounded-3xl p-6 sm:p-8 border border-[#2a2a38] shadow-2xl">
+          <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+            <div class="flex items-center gap-3">
+              <div class="bg-white p-1 rounded-xl shadow w-12 h-12 flex items-center justify-center">
+                <img src="/logo.png" alt="ЧИО ЧИО" class="w-full h-full object-contain">
+              </div>
+              <div>
+                <span class="text-xs uppercase font-extrabold tracking-widest text-red-500 block">Электронная карта лояльности</span>
+                <h3 id="card-owner-name" class="text-xl font-black text-white"></h3>
+                <span id="card-owner-phone" class="font-mono text-xs text-gray-400"></span>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="text-xs text-gray-400 block">Всего посещений:</span>
+              <span id="card-total-visits" class="text-2xl font-black text-white"></span>
+            </div>
+          </div>
+
+          <!-- Stamps Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6">
+            <div id="card-stamp-1" class="stamp-slot p-5 rounded-2xl border border-[#2a2a36] bg-[#121218] text-center">
+              <div class="w-14 h-14 mx-auto rounded-full bg-[#1b1b24] flex items-center justify-center mb-2 font-black text-lg text-gray-400 slot-icon">1</div>
+              <h4 class="font-bold text-white text-sm">Стрижка 1</h4>
+              <span class="text-xs text-gray-400 block mt-1 slot-desc">Стандартный визит</span>
+            </div>
+
+            <div id="card-stamp-2" class="stamp-slot p-5 rounded-2xl border border-[#2a2a36] bg-[#121218] text-center">
+              <div class="w-14 h-14 mx-auto rounded-full bg-[#1b1b24] flex items-center justify-center mb-2 font-black text-lg text-gray-400 slot-icon">2</div>
+              <h4 class="font-bold text-white text-sm">Стрижка 2</h4>
+              <span class="text-xs text-gray-400 block mt-1 slot-desc">Стандартный визит</span>
+            </div>
+
+            <div id="card-stamp-3" class="stamp-slot p-5 rounded-2xl border border-red-500/40 bg-red-950/20 text-center">
+              <div class="w-14 h-14 mx-auto rounded-full bg-red-600/30 text-red-400 flex items-center justify-center mb-2 font-black text-lg slot-icon">🎁</div>
+              <h4 class="font-extrabold text-red-400 text-sm">Стрижка 3</h4>
+              <span class="text-xs font-bold text-white bg-red-600 px-2 py-0.5 rounded-full inline-block mt-1 slot-desc">100% БЕСПЛАТНО</span>
+            </div>
+          </div>
+
+          <!-- Status Message Callout -->
+          <div id="card-status-callout" class="p-4 rounded-2xl text-center font-bold text-sm"></div>
+
+          <!-- How It Works Note -->
+          <div class="mt-6 pt-6 border-t border-[#232332] grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-gray-400">
+            <div class="flex items-start gap-2">
+              <span class="font-bold text-white bg-red-600/30 text-red-400 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0">1</span>
+              <span>Подстригитесь в любой экспресс-парикмахерской ЧИО ЧИО</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <span class="font-bold text-white bg-red-600/30 text-red-400 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0">2</span>
+              <span>Назовите номер телефона при оплате в терминале</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <span class="font-bold text-white bg-red-600/30 text-red-400 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0">3</span>
+              <span>Каждая 3-я стрижка автоматически рассчитывается за 0 ₽!</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Past Visits Table -->
+        <div class="bg-[#14141a] border border-[#252533] rounded-2xl p-6 shadow-xl">
+          <h4 class="font-black text-white text-base mb-4 flex items-center gap-2">
+            <i data-lucide="history" class="w-4 h-4 text-red-500"></i>
+            <span>История ваших посещений</span>
+          </h4>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs sm:text-sm">
+              <thead>
+                <tr class="border-b border-[#242430] text-gray-400">
+                  <th class="py-2.5 px-3">Дата</th>
+                  <th class="py-2.5 px-3">Услуга</th>
+                  <th class="py-2.5 px-3">Мастер</th>
+                  <th class="py-2.5 px-3">Стоимость</th>
+                  <th class="py-2.5 px-3">Статус</th>
+                </tr>
+              </thead>
+              <tbody id="loyalty-orders-tbody" class="divide-y divide-[#1e1e28]">
+                <!-- Rows by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ====================================================================
+         TAB 3: КАБИНЕТ МАСТЕРА (50% заработок мастера)
+         ==================================================================== -->
+    <section id="tab-master" class="tab-content hidden max-w-5xl mx-auto space-y-6">
+      
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+        <div>
+          <h2 class="text-2xl sm:text-3xl font-black text-white flex items-center gap-2">
+            <span>Кабинет мастера ЧИО ЧИО</span>
+            <span class="badge-red text-xs px-2.5 py-0.5 rounded-full font-bold">50% от чека</span>
+          </h2>
+          <p class="text-gray-400 text-xs sm:text-sm mt-1">Отслеживайте свои выполненные стрижки и баланс заработанных средств</p>
+        </div>
+
+        <!-- Master Switcher Dropdown -->
+        <div class="flex items-center gap-2">
+          <label for="master-select-cabinet" class="text-xs text-gray-400 font-bold uppercase">Мастер:</label>
+          <select
+            id="master-select-cabinet"
+            onchange="loadMasterCabinet(this.value)"
+            class="bg-[#161620] border border-[#2e2e40] text-white text-sm rounded-xl px-4 py-2 outline-none focus:border-red-500"
+          >
+            <!-- Populated by JS -->
+          </select>
+        </div>
+      </div>
+
+      <!-- Master KPI Cards -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <div class="bg-[#14141a] border border-[#252533] p-5 rounded-2xl relative overflow-hidden">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-gray-400">К выплате сейчас</span>
+            <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+              <i data-lucide="wallet" class="w-4 h-4"></i>
+            </div>
+          </div>
+          <span id="mkpi-balance" class="text-2xl sm:text-3xl font-black text-emerald-400 font-mono">0 ₽</span>
+          <span class="text-[11px] text-gray-500 block mt-1">50% доля, доступная к выдаче</span>
+        </div>
+
+        <div class="bg-[#14141a] border border-[#252533] p-5 rounded-2xl relative overflow-hidden">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Заработано сегодня</span>
+            <div class="w-8 h-8 rounded-lg bg-red-500/10 text-red-500 flex items-center justify-center">
+              <i data-lucide="sun" class="w-4 h-4"></i>
+            </div>
+          </div>
+          <span id="mkpi-today" class="text-2xl sm:text-3xl font-black text-white font-mono">0 ₽</span>
+          <span id="mkpi-today-cuts" class="text-[11px] text-gray-500 block mt-1">0 стрижек за смену</span>
+        </div>
+
+        <div class="bg-[#14141a] border border-[#252533] p-5 rounded-2xl relative overflow-hidden">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Всего стрижек</span>
+            <div class="w-8 h-8 rounded-lg bg-red-500/10 text-red-500 flex items-center justify-center">
+              <i data-lucide="scissors" class="w-4 h-4"></i>
+            </div>
+          </div>
+          <span id="mkpi-cuts" class="text-2xl sm:text-3xl font-black text-white font-mono">0</span>
+          <span class="text-[11px] text-gray-500 block mt-1">Выполнено клиентам</span>
+        </div>
+
+        <div class="bg-[#14141a] border border-[#252533] p-5 rounded-2xl relative overflow-hidden">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Всего заработано</span>
+            <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
+              <i data-lucide="award" class="w-4 h-4"></i>
+            </div>
+          </div>
+          <span id="mkpi-total" class="text-2xl sm:text-3xl font-black text-white font-mono">0 ₽</span>
+          <span class="text-[11px] text-gray-500 block mt-1">Суммарный доход 50%</span>
+        </div>
+
+      </div>
+
+      <!-- Master Profile Card & Recent Orders -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left: Master Bio Card -->
+        <div class="bg-[#14141a] border border-[#262635] p-6 rounded-2xl text-center">
+          <div class="w-24 h-24 mx-auto rounded-2xl overflow-hidden border-2 border-red-500 shadow-lg mb-4">
+            <img id="mcard-avatar" src="" alt="Мастер" class="w-full h-full object-cover">
+          </div>
+          <h3 id="mcard-name" class="text-lg font-black text-white"></h3>
+          <span id="mcard-spec" class="text-xs text-red-400 font-semibold block mt-0.5"></span>
+          <span id="mcard-phone" class="font-mono text-xs text-gray-400 block mt-2"></span>
+
+          <div class="mt-6 pt-6 border-t border-[#232330] text-left text-xs space-y-2 text-gray-300">
+            <div class="flex items-center justify-between">
+              <span class="text-gray-400">Тариф вознаграждения:</span>
+              <span class="font-bold text-white">50% от стрижки</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-gray-400">Бесплатная 3-я стрижка:</span>
+              <span class="font-bold text-emerald-400">50% оплачивает салон</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-gray-400">Периодичность выплат:</span>
+              <span class="font-bold text-white">По запросу / в смену</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Recent cuts ledger for master -->
+        <div class="lg:col-span-2 bg-[#14141a] border border-[#262635] p-6 rounded-2xl">
+          <h4 class="font-black text-white text-base mb-4 flex items-center justify-between">
+            <span class="flex items-center gap-2">
+              <i data-lucide="list-ordered" class="w-4 h-4 text-red-500"></i>
+              <span>Последние стрижки мастера</span>
+            </span>
+            <span class="text-xs text-gray-400 font-normal">Автоматический учет 50%</span>
+          </h4>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs sm:text-sm">
+              <thead>
+                <tr class="border-b border-[#242430] text-gray-400">
+                  <th class="py-2.5 px-3">Время</th>
+                  <th class="py-2.5 px-3">Клиент</th>
+                  <th class="py-2.5 px-3">Стрижка</th>
+                  <th class="py-2.5 px-3">Чек</th>
+                  <th class="py-2.5 px-3 text-right">Ваши 50%</th>
+                </tr>
+              </thead>
+              <tbody id="master-orders-tbody" class="divide-y divide-[#1e1e28]">
+                <!-- Filled by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ====================================================================
+         TAB 4: АДМИН-ПАНЕЛЬ (Вход по логину и ключу, управление мастерами)
+         ==================================================================== -->
+    <section id="tab-admin" class="tab-content hidden max-w-6xl mx-auto space-y-6">
+      
+      <!-- Admin Login Box (if not logged in) -->
+      <div id="admin-login-view" class="max-w-md mx-auto py-8">
+        <div class="bg-[#14141a] border border-[#282838] rounded-3xl p-8 shadow-2xl">
+          <div class="text-center mb-6">
+            <div class="w-16 h-16 bg-red-600/10 border border-red-500/30 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-3">
+              <i data-lucide="shield-alert" class="w-8 h-8"></i>
+            </div>
+            <h2 class="text-2xl font-black text-white">Вход в панель администратора</h2>
+            <p class="text-gray-400 text-xs mt-1">Доступ к добавлению мастеров, стрижек и финансовой аналитике 50/50</p>
+          </div>
+
+          <form id="admin-login-form" onsubmit="handleAdminLogin(event)" class="space-y-4">
+            <div>
+              <label for="admin-username-input" class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1.5">Логин администратора</label>
+              <input
+                type="text"
+                id="admin-username-input"
+                value="admin"
+                class="w-full bg-[#0d0d12] border border-[#2b2b3a] focus:border-[#e61e2b] rounded-xl px-4 py-3 text-white outline-none transition text-sm"
+                placeholder="admin"
+                required
+              >
+            </div>
+
+            <div>
+              <label for="admin-secret-key-input" class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1.5">Секретный ключ (пароль)</label>
+              <div class="relative">
+                <input
+                  type="password"
+                  id="admin-secret-key-input"
+                  value="chio2026"
+                  class="w-full bg-[#0d0d12] border border-[#2b2b3a] focus:border-[#e61e2b] rounded-xl px-4 py-3 text-white font-mono outline-none transition text-sm"
+                  placeholder="••••••••"
+                  required
+                >
+                <button type="button" onclick="toggleAdminKeyVisibility()" class="absolute right-3 top-3 text-gray-400 hover:text-white">
+                  <i data-lucide="eye" class="w-4 h-4"></i>
+                </button>
+              </div>
+              <p class="text-[11px] text-gray-500 mt-1">По умолчанию: Логин: <code class="text-red-400">admin</code> | Ключ: <code class="text-red-400">chio2026</code></p>
+            </div>
+
+            <div id="admin-login-error" class="hidden text-xs text-red-400 bg-red-950/40 border border-red-500/30 p-2.5 rounded-xl font-medium"></div>
+
+            <button type="submit" class="w-full btn-chio-red py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 mt-2">
+              <i data-lucide="lock" class="w-4 h-4"></i>
+              <span>Войти в систему</span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Admin Authenticated Dashboard View -->
+      <div id="admin-dashboard-view" class="hidden space-y-6">
+        
+        <!-- Header Strip -->
+        <div class="flex flex-wrap items-center justify-between gap-4 bg-[#14141a] border border-[#242432] p-4 rounded-2xl">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-red-600/20 text-red-500 flex items-center justify-center font-black">
+              <i data-lucide="shield" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-lg font-black text-white">Панель Управляющего ЧИО ЧИО</h3>
+                <span class="badge-red text-[10px] px-2 py-0.5 rounded-full font-bold">Онлайн</span>
+              </div>
+              <span id="admin-user-badge" class="text-xs text-gray-400"></span>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <button onclick="refreshAdminData()" class="px-3 py-2 bg-[#1c1c26] hover:bg-[#252533] border border-[#2d2d3e] text-xs font-semibold text-gray-300 rounded-xl flex items-center gap-1.5 transition">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+              <span>Обновить</span>
+            </button>
+            <button onclick="adminLogout()" class="px-3 py-2 bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-500/20 text-xs font-semibold rounded-xl flex items-center gap-1.5 transition">
+              <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+              <span>Выйти</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 5 Financial & Operational Metrics (50/50 breakdown) -->
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+          
+          <div class="bg-[#14141a] border border-[#242432] p-4 rounded-2xl">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-gray-400 block mb-1">Выручка (Оборот)</span>
+            <span id="akpi-total-rev" class="text-xl sm:text-2xl font-black text-white font-mono">0 ₽</span>
+            <span class="text-[10px] text-gray-500 block mt-1">100% чеков</span>
+          </div>
+
+          <div class="bg-[#14141a] border border-[#242432] p-4 rounded-2xl">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-400 block mb-1">Доля мастеров (50%)</span>
+            <span id="akpi-master-share" class="text-xl sm:text-2xl font-black text-emerald-400 font-mono">0 ₽</span>
+            <span class="text-[10px] text-gray-500 block mt-1">Начислено мастерам</span>
+          </div>
+
+          <div class="bg-[#14141a] border border-[#242432] p-4 rounded-2xl">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-red-400 block mb-1">Доход салона (50%)</span>
+            <span id="akpi-salon-share" class="text-xl sm:text-2xl font-black text-red-400 font-mono">0 ₽</span>
+            <span class="text-[10px] text-gray-500 block mt-1">Прибыль парикмахерской</span>
+          </div>
+
+          <div class="bg-[#14141a] border border-[#242432] p-4 rounded-2xl">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-gray-400 block mb-1">Стрижек всего</span>
+            <span id="akpi-cuts-count" class="text-xl sm:text-2xl font-black text-white font-mono">0</span>
+            <span id="akpi-today-cuts" class="text-[10px] text-gray-500 block mt-1">Сегодня: 0</span>
+          </div>
+
+          <div class="bg-[#14141a] border border-[#242432] p-4 rounded-2xl">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400 block mb-1">3-х бесплатных</span>
+            <span id="akpi-free-cuts" class="text-xl sm:text-2xl font-black text-amber-400 font-mono">0</span>
+            <span class="text-[10px] text-gray-500 block mt-1">Подарено клиентам</span>
+          </div>
+
+        </div>
+
+        <!-- Admin Sub-Navigation Tabs -->
+        <div class="flex items-center gap-2 border-b border-[#242432] pb-3 overflow-x-auto text-xs sm:text-sm">
+          <button onclick="switchAdminSection('masters')" id="asub-btn-masters" class="admin-sub-btn px-4 py-2 rounded-xl font-bold bg-[#e61e2b] text-white flex items-center gap-2">
+            <i data-lucide="users" class="w-4 h-4"></i>
+            <span>Мастера салона</span>
+          </button>
+          <button onclick="switchAdminSection('services')" id="asub-btn-services" class="admin-sub-btn px-4 py-2 rounded-xl font-bold bg-[#171720] text-gray-400 hover:text-white flex items-center gap-2">
+            <i data-lucide="scissors" class="w-4 h-4"></i>
+            <span>Стрижки и прайс-лист</span>
+          </button>
+          <button onclick="switchAdminSection('orders')" id="asub-btn-orders" class="admin-sub-btn px-4 py-2 rounded-xl font-bold bg-[#171720] text-gray-400 hover:text-white flex items-center gap-2">
+            <i data-lucide="receipt" class="w-4 h-4"></i>
+            <span>Журнал оплат (50/50)</span>
+          </button>
+          <button onclick="switchAdminSection('clients')" id="asub-btn-clients" class="admin-sub-btn px-4 py-2 rounded-xl font-bold bg-[#171720] text-gray-400 hover:text-white flex items-center gap-2">
+            <i data-lucide="contact" class="w-4 h-4"></i>
+            <span>База клиентов</span>
+          </button>
+        </div>
+
+        <!-- SUBSECTION 1: MASTERS MANAGEMENT -->
+        <div id="asec-masters" class="admin-sub-section space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h4 class="text-lg font-black text-white">Список мастеров и выплаты</h4>
+              <p class="text-xs text-gray-400">Добавляйте новых мастеров и выплачивайте заработанные 50%</p>
+            </div>
+            <button onclick="openAddMasterModal()" class="btn-chio-red px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center gap-2">
+              <i data-lucide="user-plus" class="w-4 h-4"></i>
+              <span>Добавить мастера</span>
+            </button>
+          </div>
+
+          <div id="admin-masters-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Masters rendered by JS -->
+          </div>
+        </div>
+
+        <!-- SUBSECTION 2: SERVICES MANAGEMENT -->
+        <div id="asec-services" class="admin-sub-section hidden space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h4 class="text-lg font-black text-white">Прайс-лист и экспресс-стрижки</h4>
+              <p class="text-xs text-gray-400">Управляйте каталогом стрижек, ценами и длительностью</p>
+            </div>
+            <button onclick="openAddServiceModal()" class="btn-chio-red px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center gap-2">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i>
+              <span>Добавить стрижку</span>
+            </button>
+          </div>
+
+          <div id="admin-services-table-wrapper" class="bg-[#14141a] border border-[#242432] rounded-2xl overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs sm:text-sm">
+                <thead>
+                  <tr class="border-b border-[#242430] bg-[#101014] text-gray-400">
+                    <th class="py-3 px-4">Название стрижки</th>
+                    <th class="py-3 px-4">Время</th>
+                    <th class="py-3 px-4">Цена для клиента</th>
+                    <th class="py-3 px-4">Доля мастера (50%)</th>
+                    <th class="py-3 px-4">Статус</th>
+                    <th class="py-3 px-4 text-right">Действия</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-services-tbody" class="divide-y divide-[#1e1e28]">
+                  <!-- Services rendered by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUBSECTION 3: ORDERS JOURNAL -->
+        <div id="asec-orders" class="admin-sub-section hidden space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h4 class="text-lg font-black text-white">Журнал чеков и стрижек</h4>
+              <p class="text-xs text-gray-400">Детальный расчет по каждой стрижке: 50% мастеру, 50% салону</p>
+            </div>
+          </div>
+
+          <div class="bg-[#14141a] border border-[#242432] rounded-2xl overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs sm:text-sm">
+                <thead>
+                  <tr class="border-b border-[#242430] bg-[#101014] text-gray-400">
+                    <th class="py-3 px-4">Чек #</th>
+                    <th class="py-3 px-4">Дата</th>
+                    <th class="py-3 px-4">Клиент</th>
+                    <th class="py-3 px-4">Стрижка</th>
+                    <th class="py-3 px-4">Мастер</th>
+                    <th class="py-3 px-4">Оплачено</th>
+                    <th class="py-3 px-4">Мастеру (50%)</th>
+                    <th class="py-3 px-4">Салону (50%)</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-orders-tbody" class="divide-y divide-[#1e1e28]">
+                  <!-- Orders rendered by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUBSECTION 4: CLIENTS DATABASE -->
+        <div id="asec-clients" class="admin-sub-section hidden space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h4 class="text-lg font-black text-white">База зарегистрированных клиентов</h4>
+              <p class="text-xs text-gray-400">Учет посещений и история бесплатных стрижек</p>
+            </div>
+          </div>
+
+          <div class="bg-[#14141a] border border-[#242432] rounded-2xl overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs sm:text-sm">
+                <thead>
+                  <tr class="border-b border-[#242430] bg-[#101014] text-gray-400">
+                    <th class="py-3 px-4">ID</th>
+                    <th class="py-3 px-4">Телефон</th>
+                    <th class="py-3 px-4">Имя</th>
+                    <th class="py-3 px-4">Всего стрижек</th>
+                    <th class="py-3 px-4">Шаг в цикле лояльности</th>
+                    <th class="py-3 px-4">Бесплатных получено</th>
+                    <th class="py-3 px-4">Последний визит</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-clients-tbody" class="divide-y divide-[#1e1e28]">
+                  <!-- Clients rendered by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ====================================================================
+       MODALS
+       ==================================================================== -->
+
+  <!-- MODAL 1: RECEIPT / SUCCESS PAYMENT -->
+  <div id="receipt-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#14141b] border-2 border-red-500 rounded-3xl max-w-md w-full p-6 text-white shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      
+      <!-- Close button -->
+      <button onclick="closeReceiptModal()" class="absolute right-4 top-4 text-gray-400 hover:text-white">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+
+      <div id="printable-receipt" class="space-y-4 text-center">
+        <!-- Receipt Header -->
+        <div class="border-b border-[#252533] pb-4">
+          <div class="bg-white p-1 rounded-xl shadow w-12 h-12 mx-auto flex items-center justify-center mb-2">
+            <img src="/logo.png" alt="ЧИО ЧИО" class="w-full h-full object-contain">
+          </div>
+          <h3 class="text-xl font-black uppercase tracking-tight">ЧИО ЧИО</h3>
+          <p class="text-[11px] text-gray-400">ЭКСПРЕСС-ПАРИКМАХЕРСКАЯ • ЧЕК ОПЛАТЫ</p>
+          <span id="receipt-number" class="text-xs font-mono text-red-500 font-bold block mt-1"></span>
+          <span id="receipt-datetime" class="text-[10px] text-gray-400 block font-mono"></span>
+        </div>
+
+        <!-- Stamp Celebration (if 3rd free) -->
+        <div id="receipt-celebration-box" class="p-3 rounded-xl bg-red-900/30 border border-red-500/40 text-xs">
+          <span class="text-xl block mb-1">✂️ 🎁</span>
+          <span id="receipt-celebration-text" class="font-bold text-white block"></span>
+        </div>
+
+        <!-- Receipt Line Items -->
+        <div class="bg-[#0c0c10] p-4 rounded-xl text-left text-xs font-mono space-y-2 border border-[#22222e]">
+          <div class="flex justify-between">
+            <span class="text-gray-400">Мастер:</span>
+            <span id="receipt-master" class="font-bold text-white"></span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-400">Услуга:</span>
+            <span id="receipt-service" class="font-bold text-white text-right"></span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-400">Клиент:</span>
+            <span id="receipt-client" class="text-gray-300"></span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-400">Способ:</span>
+            <span id="receipt-method" class="text-gray-300"></span>
+          </div>
+
+          <div class="border-t border-[#22222e] pt-2 space-y-1">
+            <div class="flex justify-between text-gray-400">
+              <span>Стоимость:</span>
+              <span id="receipt-orig-price"></span>
+            </div>
+            <div id="receipt-discount-row" class="flex justify-between text-red-400 font-bold">
+              <span>Скидка (3-я стрижка):</span>
+              <span id="receipt-discount-val"></span>
+            </div>
+            <div class="flex justify-between text-base font-black text-white pt-1 border-t border-[#2a2a38]">
+              <span>ИТОГО К ОПЛАТЕ:</span>
+              <span id="receipt-final-price" class="text-red-500"></span>
+            </div>
+          </div>
+
+          <div class="border-t border-[#22222e] pt-2 text-[11px] text-emerald-400">
+            <div class="flex justify-between">
+              <span>Начислено мастеру (50%):</span>
+              <span id="receipt-master-share" class="font-bold"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stamp Progress on Receipt -->
+        <div class="border-t border-[#252533] pt-3 text-xs">
+          <span class="text-gray-400 block mb-2 font-medium">Ваша карта лояльности ЧИО ЧИО:</span>
+          <div id="receipt-stamps-row" class="flex justify-center gap-2"></div>
+        </div>
+
+        <p class="text-[10px] text-gray-500">Спасибо, что выбираете ЧИО ЧИО! Ждем вас снова!</p>
+      </div>
+
+      <div class="flex gap-2 mt-6">
+        <button onclick="window.print()" class="flex-1 py-3 bg-[#1e1e28] hover:bg-[#282836] rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition">
+          <i data-lucide="printer" class="w-4 h-4"></i>
+          <span>Распечатать чек</span>
+        </button>
+        <button onclick="closeReceiptModal()" class="flex-1 btn-chio-red py-3 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5">
+          <span>Готово</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL 2: ADD MASTER (ADMIN) -->
+  <div id="add-master-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#14141b] border border-[#2c2c3c] rounded-3xl max-w-md w-full p-6 text-white shadow-2xl relative">
+      <button onclick="closeAddMasterModal()" class="absolute right-4 top-4 text-gray-400 hover:text-white">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <h3 class="text-xl font-black mb-1">Добавить нового мастера</h3>
+      <p class="text-xs text-gray-400 mb-4">Мастер будет доступен клиентам в терминале оплаты</p>
+
+      <form onsubmit="submitNewMaster(event)" class="space-y-3.5 text-left">
+        <div>
+          <label class="block text-xs font-bold uppercase text-gray-300 mb-1">ФИО мастера *</label>
+          <input type="text" id="new-master-name" required placeholder="Например: Роман Смирнов" class="w-full bg-[#0d0d12] border border-[#2a2a38] focus:border-red-500 rounded-xl px-3.5 py-2.5 text-sm outline-none text-white">
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-gray-300 mb-1">Специализация</label>
+          <input type="text" id="new-master-spec" placeholder="Например: Топ-барбер • Бороды и фейд" class="w-full bg-[#0d0d12] border border-[#2a2a38] focus:border-red-500 rounded-xl px-3.5 py-2.5 text-sm outline-none text-white">
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-gray-300 mb-1">Номер телефона</label>
+          <input type="tel" id="new-master-phone" placeholder="+7 (999) 000-00-00" class="w-full bg-[#0d0d12] border border-[#2a2a38] focus:border-red-500 rounded-xl px-3.5 py-2.5 text-sm outline-none text-white font-mono">
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-gray-300 mb-1">Ссылка на фото (URL)</label>
+          <input type="url" id="new-master-avatar" placeholder="https://..." class="w-full bg-[#0d0d12] border border-[#2a2a38] focus:border-red-500 rounded-xl px-3.5 py-2.5 text-sm outline-none text-white">
+        </div>
+
+        <button type="submit" class="w-full btn-chio-red py-3 rounded-xl font-bold text-sm mt-2 flex items-center justify-center gap-2">
+          <i data-lucide="check" class="w-4 h-4"></i>
+          <span>Сохранить мастера</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 3: ADD SERVICE (ADMIN) -->
+  <div id="add-service-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#14141b] border border-[#2c2c3c] rounded-3xl max-w-md w-full p-6 text-white shadow-2xl relative">
+      <button onclick="closeAddServiceModal()" class="absolute right-4 top-4 text-gray-400 hover:text-white">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <h3 class="text-xl font-black mb-1">Добавить новую стрижку</h3>
+      <p class="text-xs text-gray-400 mb-4">Услуга сразу появится в экспресс-терминале</p>
+
+      <form onsubmit="submitNewService(event)" class="space-y-3.5 text-left">
+        <div>
+          <label class="block text-xs font-bold uppercase text-gray-300 mb-1">Название услуги *</label>
+          <input type="text" id="new-service-name" required placeholder="Например: Стрижка ножницами" class="w-full bg-[#0d0d12] border border-[#2a2a38] focus:border-red-500 rounded-xl px-3.5 py-2.5 text-sm outline-none text-white">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold uppercase text-gray-300 mb-1">Стоимость (₽) *</label>
+            <input type="number" id="new-service-price" required min="0" placeholder="600" class="w-full bg-[#0d0d12] border border-[#2a2a38] focus:border-red-500 rounded-xl px-3.5 py-2.5 text-sm outline-none text-white font-mono">
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-gray-300 mb-1">Длительность (мин)</label>
+            <input type="number" id="new-service-duration" min="5" value="15" class="w-full bg-[#0d0d12] border border-[#2a2a38] focus:border-red-500 rounded-xl px-3.5 py-2.5 text-sm outline-none text-white font-mono">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-gray-300 mb-1">Краткое описание</label>
+          <textarea id="new-service-desc" rows="2" placeholder="Особенности стрижки, применяемые насадки..." class="w-full bg-[#0d0d12] border border-[#2a2a38] focus:border-red-500 rounded-xl px-3.5 py-2 text-sm outline-none text-white resize-none"></textarea>
+        </div>
+
+        <button type="submit" class="w-full btn-chio-red py-3 rounded-xl font-bold text-sm mt-2 flex items-center justify-center gap-2">
+          <i data-lucide="check" class="w-4 h-4"></i>
+          <span>Сохранить услугу</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 4: PAYOUT TO MASTER (ADMIN) -->
+  <div id="payout-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#14141b] border border-[#2c2c3c] rounded-3xl max-w-md w-full p-6 text-white shadow-2xl relative">
+      <button onclick="closePayoutModal()" class="absolute right-4 top-4 text-gray-400 hover:text-white">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <h3 class="text-xl font-black mb-1">Выплата мастеру (50%)</h3>
+      <p id="payout-master-name" class="text-xs text-red-400 font-bold mb-4"></p>
+
+      <form onsubmit="submitPayout(event)" class="space-y-3.5 text-left">
+        <input type="hidden" id="payout-master-id">
+        <div>
+          <label class="block text-xs font-bold uppercase text-gray-300 mb-1">Текущий накопленный баланс</label>
+          <span id="payout-current-balance" class="font-mono text-xl font-black text-emerald-400 block mb-2"></span>
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-gray-300 mb-1">Сумма к выдаче (₽)</label>
+          <input type="number" id="payout-amount" required min="1" class="w-full bg-[#0d0d12] border border-[#2a2a38] focus:border-red-500 rounded-xl px-3.5 py-2.5 text-sm outline-none text-white font-mono font-bold">
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-gray-300 mb-1">Примечание / способ выдачи</label>
+          <input type="text" id="payout-notes" placeholder="Наличные из кассы / перевод на карту" class="w-full bg-[#0d0d12] border border-[#2a2a38] focus:border-red-500 rounded-xl px-3.5 py-2.5 text-sm outline-none text-white">
+        </div>
+
+        <button type="submit" class="w-full btn-chio-red py-3 rounded-xl font-bold text-sm mt-2 flex items-center justify-center gap-2">
+          <i data-lucide="banknote" class="w-4 h-4"></i>
+          <span>Подтвердить выплату</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+  <!-- Footer -->
+  <footer class="border-t border-[#1b1b22] bg-[#0c0c10] py-6 text-center text-xs text-gray-500 mt-12">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <img src="/logo.png" alt="ЧИО ЧИО" class="w-5 h-5 object-contain bg-white rounded p-0.5">
+        <span class="text-white font-bold">ЧИО ЧИО • Сеть японских экспресс-парикмахерских</span>
+      </div>
+      <p class="text-gray-400">Каждая 3-я стрижка — бесплатно • 50% чека мастеру • Терминал самообслуживания</p>
+      <div class="text-[11px] text-gray-600">
+        Лицензия сети №2026-CHIO
+      </div>
+    </div>
+  </footer>
+
+  <!-- Application Logic -->
+  <script src="/app.js"></script>
+</body>
+</html>
