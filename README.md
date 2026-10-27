@@ -1,5 +1,8 @@
 # 💈 ЧИО ЧИО — Экспресс-парикмахерская (Chio Chio Express Barbershop)
 
+> 🌐 **Онлайн-сайт (Live Demo):** **[https://gleb-dotcom.github.io/chio-chio-barbershop/](https://gleb-dotcom.github.io/chio-chio-barbershop/)**  
+> 🔑 **Админ-панель:** Логин: `admin` | Ключ: `chio2026`
+
 Веб-приложение и электронный терминал самообслуживания для экспресс-парикмахерской в фирменном черно-бело-красном стиле «Чио Чио».
 
 ---

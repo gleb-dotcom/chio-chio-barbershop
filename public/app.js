@@ -2,7 +2,10 @@
  * ЧИО ЧИО — Экспресс-парикмахерская
  * Клиентский терминал:
  * 1. Телефон -> 2. Выбор мастера -> 3. Переход на стрижки -> 4. Расчет и оплата (50% мастеру)
+ * Поддерживает работу с Node.js бэкендом и автономный режим для GitHub Pages
  */
+
+const isGitHubPages = window.location.hostname.includes('github.io') || window.location.protocol === 'file:';
 
 // State
 const state = {
@@ -37,10 +40,10 @@ function playSound(type) {
     } else if (type === 'success') {
       const now = ctx.currentTime;
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(523.25, now); // C5
-      osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
-      osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
-      osc.frequency.setValueAtTime(1046.50, now + 0.3); // C6
+      osc.frequency.setValueAtTime(523.25, now);
+      osc.frequency.setValueAtTime(659.25, now + 0.1);
+      osc.frequency.setValueAtTime(783.99, now + 0.2);
+      osc.frequency.setValueAtTime(1046.50, now + 0.3);
       gain.gain.setValueAtTime(0.12, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
       osc.start(now);
@@ -60,7 +63,7 @@ function playSound(type) {
       });
     }
   } catch (e) {
-    // Ignore blocked audio policy
+    // Audio context may be restricted
   }
 }
 
@@ -89,6 +92,318 @@ function showToast(message, type = 'info') {
     toast.classList.add('opacity-0', 'translate-y-2');
     setTimeout(() => toast.remove(), 300);
   }, 4000);
+}
+
+/* ==========================================================================
+   OFFLINE & GITHUB PAGES PERSISTENT MOCK STORAGE
+   ========================================================================== */
+
+const MockDB = {
+  get(key, defaultVal) {
+    const raw = localStorage.getItem('chio_mock_' + key);
+    if (!raw) {
+      this.set(key, defaultVal);
+      return defaultVal;
+    }
+    try { return JSON.parse(raw); } catch (e) { return defaultVal; }
+  },
+  set(key, val) {
+    localStorage.setItem('chio_mock_' + key, JSON.stringify(val));
+  },
+  init() {
+    if (!localStorage.getItem('chio_mock_initialized')) {
+      this.set('masters', [
+        { id: 1, name: 'Артем Волков', specialization: 'Топ-Барбер • Скоростной фейд', phone: '+7 (999) 111-22-33', avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80', active: 1, total_earnings: 12500, current_balance: 3500, cuts_count: 42 },
+        { id: 2, name: 'Даниил Ким', specialization: 'Мастер экспресс-стрижек', phone: '+7 (999) 222-33-44', avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80', active: 1, total_earnings: 9800, current_balance: 2400, cuts_count: 36 },
+        { id: 3, name: 'Елена Соколова', specialization: 'Стилист-универсал • Модельные стрижки', phone: '+7 (999) 333-44-55', avatar_url: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=400&q=80', active: 1, total_earnings: 14200, current_balance: 4100, cuts_count: 48 },
+        { id: 4, name: 'Тимур Алиев', specialization: 'Барбер • Бороды и геометрия', phone: '+7 (999) 444-55-66', avatar_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80', active: 1, total_earnings: 8600, current_balance: 1900, cuts_count: 29 },
+      ]);
+      this.set('services', [
+        { id: 1, name: 'Мужская экспресс-стрижка', price: 500, duration_min: 15, description: 'Классическая или модельная стрижка за 15 минут по японской технологии', active: 1 },
+        { id: 2, name: 'Стрижка машинкой (1-2 насадки)', price: 350, duration_min: 10, description: 'Быстрая однородная стрижка под насадку с чистой окантовкой', active: 1 },
+        { id: 3, name: 'Оформление бороды и усов', price: 400, duration_min: 15, description: 'Четкие контуры, снятие длины, шейвер и масло для ухода', active: 1 },
+        { id: 4, name: 'Комплекс: Стрижка + Борода', price: 800, duration_min: 25, description: 'Фирменная стрижка волос и детальное оформление бороды', active: 1 },
+        { id: 5, name: 'Детская стрижка (до 12 лет)', price: 450, duration_min: 15, description: 'Быстрая и аккуратная стрижка в специальном кресле', active: 1 },
+        { id: 6, name: 'Премиум комплекс с мытьем и укладкой', price: 1000, duration_min: 30, description: 'Мытье головы, стрижка, распаривание, окантовка и стайлинг', active: 1 },
+      ]);
+      this.set('clients', [
+        { id: 1, phone: '+7 (900) 123-45-67', name: 'Максим Иванов', visits_count: 2, free_haircuts_received: 0, last_visit_at: new Date(Date.now() - 86400000 * 2).toISOString() },
+        { id: 2, phone: '+7 (911) 777-88-99', name: 'Александр', visits_count: 0, free_haircuts_received: 0, last_visit_at: null },
+        { id: 3, phone: '+7 (922) 555-44-33', name: 'Дмитрий', visits_count: 3, free_haircuts_received: 1, last_visit_at: new Date(Date.now() - 86400000 * 4).toISOString() },
+      ]);
+      this.set('orders', []);
+      this.set('payouts', []);
+      localStorage.setItem('chio_mock_initialized', 'true');
+    }
+  }
+};
+
+MockDB.init();
+
+// Universal API fetcher: attempts real API, falls back gracefully to MockDB on GitHub Pages
+async function api(path, options = {}) {
+  if (!isGitHubPages) {
+    try {
+      const res = await fetch(path, options);
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (e) {
+      // Fallback to local mock if server isn't reachable
+    }
+  }
+
+  // MOCK ROUTER (For GitHub Pages static hosting)
+  const method = (options.method || 'GET').toUpperCase();
+  const body = options.body ? JSON.parse(options.body) : {};
+
+  // 1. Services
+  if (path === '/api/services' && method === 'GET') {
+    return MockDB.get('services', []).filter(s => s.active);
+  }
+
+  // 2. Masters
+  if (path === '/api/masters' && method === 'GET') {
+    return MockDB.get('masters', []).filter(m => m.active);
+  }
+
+  // 3. Client Lookup
+  if (path === '/api/client/lookup' && method === 'POST') {
+    let clients = MockDB.get('clients', []);
+    let client = clients.find(c => c.phone === body.phone);
+    if (!client) {
+      client = {
+        id: clients.length + 1,
+        phone: body.phone,
+        name: body.name || '',
+        visits_count: 0,
+        free_haircuts_received: 0,
+        created_at: new Date().toISOString(),
+        last_visit_at: null
+      };
+      clients.push(client);
+      MockDB.set('clients', clients);
+    } else if (body.name && !client.name) {
+      client.name = body.name;
+      MockDB.set('clients', clients);
+    }
+
+    const cycleStep = (client.visits_count % 3) + 1;
+    const isNextFree = (cycleStep === 3);
+
+    const orders = MockDB.get('orders', []).filter(o => o.client_phone === body.phone);
+
+    return {
+      client: {
+        ...client,
+        cycleStep,
+        isNextFree,
+        remainingToFree: isNextFree ? 0 : (3 - cycleStep)
+      },
+      history: orders
+    };
+  }
+
+  // 4. Checkout
+  if (path === '/api/checkout' && method === 'POST') {
+    let clients = MockDB.get('clients', []);
+    let client = clients.find(c => c.phone === body.phone);
+    if (!client) {
+      client = { id: clients.length + 1, phone: body.phone, name: body.name || '', visits_count: 0, free_haircuts_received: 0 };
+      clients.push(client);
+    }
+
+    const masters = MockDB.get('masters', []);
+    const master = masters.find(m => m.id === Number(body.masterId)) || masters[0];
+
+    const services = MockDB.get('services', []);
+    const service = services.find(s => s.id === Number(body.serviceId)) || services[0];
+
+    const isFree = (client.visits_count % 3 === 2);
+    const origPrice = service.price;
+    const finalPrice = isFree ? 0 : origPrice;
+    const discountAmount = isFree ? origPrice : 0;
+    const masterShare = origPrice * 0.50; // Salon compensates 50% on free cuts
+    const salonShare = isFree ? -(origPrice * 0.50) : (finalPrice * 0.50);
+
+    // Update client
+    client.visits_count += 1;
+    if (isFree) client.free_haircuts_received += 1;
+    client.last_visit_at = new Date().toISOString();
+    MockDB.set('clients', clients);
+
+    // Update master
+    master.total_earnings += masterShare;
+    master.current_balance += masterShare;
+    master.cuts_count += 1;
+    MockDB.set('masters', masters);
+
+    // Record order
+    const orders = MockDB.get('orders', []);
+    const orderId = orders.length + 1;
+    const newOrder = {
+      id: orderId,
+      client_id: client.id,
+      client_phone: client.phone,
+      client_name: client.name || 'Клиент',
+      master_id: master.id,
+      master_name: master.name,
+      service_id: service.id,
+      service_name: service.name,
+      original_price: origPrice,
+      discount_amount: discountAmount,
+      final_price: finalPrice,
+      master_share: masterShare,
+      salon_share: salonShare,
+      is_free: isFree ? 1 : 0,
+      payment_method: body.paymentMethod || 'sbp_qr',
+      created_at: new Date().toISOString()
+    };
+    orders.unshift(newOrder);
+    MockDB.set('orders', orders);
+
+    return {
+      success: true,
+      orderId,
+      receipt: {
+        orderId,
+        date: new Date().toISOString(),
+        clientPhone: client.phone,
+        clientName: client.name || 'Клиент',
+        serviceName: service.name,
+        originalPrice: origPrice,
+        discountAmount: discountAmount,
+        finalPrice: finalPrice,
+        isFree: isFree,
+        paymentMethod: body.paymentMethod || 'sbp_qr',
+        masterName: master.name,
+        masterShare: masterShare,
+        salonShare: salonShare,
+        visitsCount: client.visits_count,
+        nextCycleStep: (client.visits_count % 3) + 1,
+        celebrationMessage: isFree
+          ? '🎉 Ваша 3-я стрижка в ЧИО ЧИО совершенно БЕСПЛАТНАЯ! Спасибо за вашу верность!'
+          : `✂️ Спасибо за визит! Это ваша стрижка #${client.visits_count}. До следующей бесплатной осталось: ${3 - ((client.visits_count % 3) || 3)}.`
+      },
+      masterInfo: {
+        name: master.name,
+        earnedFromThisCut: masterShare,
+        newBalance: master.current_balance
+      }
+    };
+  }
+
+  // 5. Master Cabinet
+  if (path.startsWith('/api/master/cabinet')) {
+    const url = new URL('http://dummy.com' + path);
+    const id = Number(url.searchParams.get('id'));
+    const masters = MockDB.get('masters', []);
+    const master = masters.find(m => m.id === id) || masters[0];
+    const orders = MockDB.get('orders', []).filter(o => o.master_id === master.id);
+    return {
+      master: {
+        ...master,
+        today_earnings: orders.filter(o => new Date(o.created_at).toDateString() === new Date().toDateString()).reduce((a, c) => a + c.master_share, 0),
+        today_cuts: orders.filter(o => new Date(o.created_at).toDateString() === new Date().toDateString()).length
+      },
+      orders: orders.slice(0, 20)
+    };
+  }
+
+  // 6. Admin Login
+  if (path === '/api/admin/login' && method === 'POST') {
+    if (body.username === 'admin' && body.secret_key === 'chio2026') {
+      return { success: true, admin: { id: 1, username: 'admin', name: 'Главный администратор' } };
+    }
+    throw new Error('Неверный логин или секретный ключ (admin / chio2026)');
+  }
+
+  // 7. Admin Dashboard
+  if (path === '/api/admin/dashboard') {
+    const orders = MockDB.get('orders', []);
+    const masters = MockDB.get('masters', []);
+    const clients = MockDB.get('clients', []);
+    return {
+      summary: {
+        totalRevenue: orders.reduce((s, o) => s + o.final_price, 0),
+        totalMasterShare: orders.reduce((s, o) => s + o.master_share, 0),
+        totalSalonShare: orders.reduce((s, o) => s + o.salon_share, 0),
+        totalOrders: orders.length,
+        freeOrders: orders.filter(o => o.is_free).length,
+        todayRevenue: 0,
+        todayCuts: 0,
+        totalClients: clients.length,
+        mastersCount: masters.length
+      }
+    };
+  }
+
+  // 8. Admin Masters
+  if (path === '/api/admin/masters') {
+    if (method === 'GET') return MockDB.get('masters', []);
+    if (method === 'POST') {
+      const masters = MockDB.get('masters', []);
+      const newM = {
+        id: masters.length + 1,
+        name: body.name,
+        specialization: body.specialization || 'Барбер-стилист',
+        phone: body.phone,
+        avatar_url: body.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=400&q=80',
+        active: 1,
+        total_earnings: 0,
+        current_balance: 0,
+        cuts_count: 0
+      };
+      masters.push(newM);
+      MockDB.set('masters', masters);
+      return newM;
+    }
+  }
+
+  // 9. Admin Payout
+  if (path.includes('/payout') && method === 'POST') {
+    const parts = path.split('/');
+    const masterId = Number(parts[parts.length - 2]);
+    const masters = MockDB.get('masters', []);
+    const m = masters.find(item => item.id === masterId);
+    if (m) {
+      const amt = Number(body.amount) || m.current_balance;
+      m.current_balance = Math.max(0, m.current_balance - amt);
+      MockDB.set('masters', masters);
+    }
+    return { success: true, message: 'Выплата 50% успешно проведена' };
+  }
+
+  // 10. Admin Services
+  if (path === '/api/admin/services') {
+    if (method === 'GET') return MockDB.get('services', []);
+    if (method === 'POST') {
+      const services = MockDB.get('services', []);
+      const newS = {
+        id: services.length + 1,
+        name: body.name,
+        price: Number(body.price),
+        duration_min: Number(body.duration_min) || 15,
+        description: body.description || '',
+        active: 1
+      };
+      services.push(newS);
+      MockDB.set('services', services);
+      return newS;
+    }
+  }
+
+  // 11. Admin Orders
+  if (path === '/api/admin/orders') {
+    return MockDB.get('orders', []);
+  }
+
+  // 12. Admin Clients
+  if (path === '/api/admin/clients') {
+    return MockDB.get('clients', []);
+  }
+
+  return {};
 }
 
 // Initialize on DOM load
@@ -173,13 +488,12 @@ function switchTab(tabId) {
 }
 
 /* ==========================================================================
-   API DATA FETCHING
+   DATA FETCHING
    ========================================================================== */
 
 async function loadServices() {
   try {
-    const res = await fetch('/api/services');
-    state.services = await res.json();
+    state.services = await api('/api/services');
     renderServices();
     renderAdminServicesTable();
   } catch (err) {
@@ -189,8 +503,7 @@ async function loadServices() {
 
 async function loadMasters() {
   try {
-    const res = await fetch('/api/masters');
-    state.masters = await res.json();
+    state.masters = await api('/api/masters');
     renderMasters();
     populateMasterCabinetSelect();
   } catch (err) {
@@ -207,16 +520,15 @@ async function autoLookupClient(phone, prefilledName) {
   spinner.classList.remove('hidden');
 
   try {
-    const res = await fetch('/api/client/lookup', {
+    const data = await api('/api/client/lookup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ phone, name: prefilledName || document.getElementById('client-name-input').value })
     });
 
-    const data = await res.json();
     spinner.classList.add('hidden');
 
-    if (res.ok && data.client) {
+    if (data && data.client) {
       state.currentClient = data.client;
       renderLiveLoyaltyPreview(data.client);
     }
@@ -279,13 +591,11 @@ async function checkClientAndProceed() {
   }
 
   try {
-    const res = await fetch('/api/client/lookup', {
+    const data = await api('/api/client/lookup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ phone, name })
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error);
 
     state.currentClient = data.client;
     // Step 2 is choosing master FIRST!
@@ -483,10 +793,8 @@ function prepareCheckoutStep() {
   const origPrice = state.selectedService.price;
   const finalPrice = isFree ? 0 : origPrice;
 
-  // Master gets 50%
   const masterCut = origPrice * 0.50;
 
-  // Fill summary UI
   document.getElementById('checkout-summary-phone').innerText = state.currentClient.phone;
   document.getElementById('checkout-summary-master').innerText = state.selectedMaster.name;
   document.getElementById('checkout-summary-service').innerText = state.selectedService.name;
@@ -545,7 +853,7 @@ async function executePayment() {
   btn.innerHTML = `<span class="animate-spin mr-2">⚙️</span> Обработка оплаты...`;
 
   try {
-    const res = await fetch('/api/checkout', {
+    const data = await api('/api/checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -557,12 +865,9 @@ async function executePayment() {
       })
     });
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error);
-
     playSound('success');
     showReceiptModal(data.receipt, data.masterInfo);
-    loadMasters(); // refresh balances
+    loadMasters();
   } catch (err) {
     showToast(err.message, 'error');
   } finally {
@@ -659,13 +964,11 @@ async function lookupLoyaltyCard() {
   }
 
   try {
-    const res = await fetch('/api/client/lookup', {
+    const data = await api('/api/client/lookup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ phone })
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error);
 
     renderLoyaltyCardResult(data.client, data.history);
   } catch (err) {
@@ -761,11 +1064,9 @@ async function loadMasterCabinet(masterId) {
   state.selectedMasterCabinetId = Number(masterId);
 
   try {
-    const res = await fetch(`/api/master/cabinet?id=${masterId}`);
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error);
-
+    const data = await api(`/api/master/cabinet?id=${masterId}`);
     const m = data.master;
+
     document.getElementById('mkpi-balance').innerText = `${m.current_balance} ₽`;
     document.getElementById('mkpi-today').innerText = `${m.today_earnings} ₽`;
     document.getElementById('mkpi-today-cuts').innerText = `${m.today_cuts} стрижек за смену`;
@@ -820,14 +1121,11 @@ async function handleAdminLogin(e) {
   errBox.classList.add('hidden');
 
   try {
-    const res = await fetch('/api/admin/login', {
+    const data = await api('/api/admin/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, secret_key: secretKey })
     });
-    const data = await res.json();
-
-    if (!res.ok) throw new Error(data.error);
 
     playSound('success');
     state.adminKey = secretKey;
@@ -870,14 +1168,9 @@ async function refreshAdminData() {
   if (!state.adminKey) return;
 
   try {
-    const res = await fetch('/api/admin/dashboard', {
+    const data = await api('/api/admin/dashboard', {
       headers: { 'x-admin-key': state.adminKey }
     });
-    if (res.status === 401 || res.status === 403) {
-      adminLogout();
-      return;
-    }
-    const data = await res.json();
     const s = data.summary;
 
     document.getElementById('akpi-total-rev').innerText = `${s.totalRevenue} ₽`;
@@ -918,10 +1211,9 @@ function switchAdminSection(secId) {
 
 async function loadAdminMasters() {
   try {
-    const res = await fetch('/api/admin/masters', {
+    const masters = await api('/api/admin/masters', {
       headers: { 'x-admin-key': state.adminKey }
     });
-    const masters = await res.json();
     state.masters = masters;
 
     const grid = document.getElementById('admin-masters-grid');
@@ -998,7 +1290,7 @@ async function submitNewMaster(e) {
   const avatar_url = document.getElementById('new-master-avatar').value.trim();
 
   try {
-    const res = await fetch('/api/admin/masters', {
+    await api('/api/admin/masters', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1006,8 +1298,6 @@ async function submitNewMaster(e) {
       },
       body: JSON.stringify({ name, specialization, phone, avatar_url })
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error);
 
     playSound('success');
     showToast(`Мастер ${name} успешно добавлен!`, 'success');
@@ -1039,7 +1329,7 @@ async function submitPayout(e) {
   const notes = document.getElementById('payout-notes').value;
 
   try {
-    const res = await fetch(`/api/admin/masters/${id}/payout`, {
+    const data = await api(`/api/admin/masters/${id}/payout`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1047,8 +1337,6 @@ async function submitPayout(e) {
       },
       body: JSON.stringify({ amount, notes })
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error);
 
     playSound('success');
     showToast(data.message, 'success');
@@ -1063,7 +1351,7 @@ async function submitPayout(e) {
 async function deleteMaster(id) {
   if (!confirm('Вы уверены, что хотите деактивировать этого мастера?')) return;
   try {
-    await fetch(`/api/admin/masters/${id}`, {
+    await api(`/api/admin/masters/${id}`, {
       method: 'DELETE',
       headers: { 'x-admin-key': state.adminKey }
     });
@@ -1077,15 +1365,13 @@ async function deleteMaster(id) {
 
 /* ==========================================================================
    ADMIN: SERVICES MANAGEMENT
-   ========================================================================== */
+   ========================================================================= */
 
 async function loadAdminServices() {
   try {
-    const res = await fetch('/api/admin/services', {
+    state.services = await api('/api/admin/services', {
       headers: { 'x-admin-key': state.adminKey }
     });
-    const services = await res.json();
-    state.services = services;
     renderAdminServicesTable();
   } catch (err) {
     console.error(err);
@@ -1136,7 +1422,7 @@ async function submitNewService(e) {
   const description = document.getElementById('new-service-desc').value.trim();
 
   try {
-    const res = await fetch('/api/admin/services', {
+    await api('/api/admin/services', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1144,8 +1430,6 @@ async function submitNewService(e) {
       },
       body: JSON.stringify({ name, price, duration_min, description })
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error);
 
     playSound('success');
     showToast(`Услуга "${name}" добавлена в прайс!`, 'success');
@@ -1160,7 +1444,7 @@ async function submitNewService(e) {
 async function deleteService(id) {
   if (!confirm('Вы уверены, что хотите скрыть эту услугу?')) return;
   try {
-    await fetch(`/api/admin/services/${id}`, {
+    await api(`/api/admin/services/${id}`, {
       method: 'DELETE',
       headers: { 'x-admin-key': state.adminKey }
     });
@@ -1178,10 +1462,9 @@ async function deleteService(id) {
 
 async function loadAdminOrders() {
   try {
-    const res = await fetch('/api/admin/orders', {
+    const orders = await api('/api/admin/orders', {
       headers: { 'x-admin-key': state.adminKey }
     });
-    const orders = await res.json();
 
     const tbody = document.getElementById('admin-orders-tbody');
     tbody.innerHTML = orders.map(o => `
@@ -1205,10 +1488,9 @@ async function loadAdminOrders() {
 
 async function loadAdminClients() {
   try {
-    const res = await fetch('/api/admin/clients', {
+    const clients = await api('/api/admin/clients', {
       headers: { 'x-admin-key': state.adminKey }
     });
-    const clients = await res.json();
 
     const tbody = document.getElementById('admin-clients-tbody');
     tbody.innerHTML = clients.map(c => {
