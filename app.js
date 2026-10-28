@@ -465,9 +465,10 @@ function switchTab(tabId) {
   playSound('click');
   state.activeTab = tabId;
 
-  ['terminal', 'loyalty', 'master', 'admin'].forEach(t => {
+  ['terminal', 'loyalty', 'admin'].forEach(t => {
     const btn = document.getElementById(`nav-btn-${t}`);
     const sec = document.getElementById(`tab-${t}`);
+    if (!btn || !sec) return;
     if (t === tabId) {
       btn.className = 'nav-btn px-3 sm:px-4 py-2 rounded-lg font-medium transition flex items-center gap-2 bg-[#e61e2b] text-white shadow';
       sec.classList.remove('hidden');
@@ -477,9 +478,6 @@ function switchTab(tabId) {
     }
   });
 
-  if (tabId === 'master') {
-    populateMasterCabinetSelect();
-  }
   if (tabId === 'admin' && state.adminKey) {
     refreshAdminData();
   }
@@ -505,7 +503,6 @@ async function loadMasters() {
   try {
     state.masters = await api('/api/masters');
     renderMasters();
-    populateMasterCabinetSelect();
   } catch (err) {
     console.error('Failed to load masters:', err);
   }
