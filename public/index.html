@@ -122,11 +122,15 @@
 
           <div class="space-y-4 max-w-md mx-auto">
             <div>
-              <label for="client-phone-input" class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1.5">Номер телефона</label>
+              <label for="client-phone-input" class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1.5 flex items-center justify-between">
+                <span>Номер телефона (11 цифр) *</span>
+                <span id="phone-counter-badge" class="font-mono text-gray-400 font-normal normal-case">0 / 11 цифр</span>
+              </label>
               <div class="relative">
                 <input
                   type="tel"
                   id="client-phone-input"
+                  maxlength="18"
                   placeholder="+7 (999) 000-00-00"
                   class="w-full bg-[#0d0d12] border-2 border-[#2b2b3a] focus:border-[#e61e2b] rounded-xl px-4 py-3.5 text-lg font-mono tracking-wider text-white placeholder-gray-500 outline-none transition"
                   oninput="handlePhoneInput(this.value)"
@@ -498,13 +502,15 @@
 
       <!-- Phone Lookup Form -->
       <div class="bg-[#14141a] border border-[#252533] p-5 rounded-2xl max-w-md mx-auto shadow-lg">
-        <label for="loyalty-check-phone" class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">Введите ваш номер телефона</label>
+        <label for="loyalty-check-phone" class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">Введите ваш номер телефона (11 цифр)</label>
         <div class="flex gap-2">
           <input
             type="tel"
             id="loyalty-check-phone"
+            maxlength="18"
             placeholder="+7 (999) 000-00-00"
             class="flex-1 bg-[#0d0d12] border border-[#2b2b3a] focus:border-[#e61e2b] rounded-xl px-4 py-2.5 text-white font-mono placeholder-gray-500 outline-none transition text-sm"
+            oninput="this.value = formatPhone(this.value)"
             onkeypress="if(event.key === 'Enter') lookupLoyaltyCard()"
           >
           <button onclick="lookupLoyaltyCard()" class="btn-chio-red px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center gap-1.5">
@@ -983,7 +989,7 @@
         </div>
         <div>
           <label class="block text-xs font-bold uppercase text-gray-300 mb-1">Номер телефона</label>
-          <input type="tel" id="new-master-phone" placeholder="+7 (999) 000-00-00" class="w-full bg-[#0d0d12] border border-[#2a2a38] focus:border-red-500 rounded-xl px-3.5 py-2.5 text-sm outline-none text-white font-mono">
+          <input type="tel" id="new-master-phone" maxlength="18" oninput="this.value = formatPhone(this.value)" placeholder="+7 (999) 000-00-00" class="w-full bg-[#0d0d12] border border-[#2a2a38] focus:border-red-500 rounded-xl px-3.5 py-2.5 text-sm outline-none text-white font-mono">
         </div>
         <div>
           <label class="block text-xs font-bold uppercase text-gray-300 mb-1">Ссылка на фото (URL)</label>

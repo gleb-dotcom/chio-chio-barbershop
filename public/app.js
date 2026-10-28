@@ -145,11 +145,16 @@ async function api(path, options = {}) {
   if (!isGitHubPages) {
     try {
       const res = await fetch(path, options);
-      if (res.ok) {
-        return await res.json();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || `Ошибка сервера (${res.status})`);
       }
+      return data;
     } catch (e) {
-      // Fallback to local mock if server isn't reachable
+      // If network failed (e.g. server down), fall through to MockDB, else re-throw validation errors
+      if (e.message && !e.message.includes('Failed to fetch') && !e.message.includes('NetworkError') && !e.message.includes('fetch')) {
+        throw e;
+      }
     }
   }
 
@@ -169,12 +174,19 @@ async function api(path, options = {}) {
 
   // 3. Client Lookup
   if (path === '/api/client/lookup' && method === 'POST') {
+    const rawDigits = (body.phone || '').replace(/\D/g, '');
+    let digits = rawDigits;
+    if (digits.length === 10) digits = '7' + digits;
+    if (digits.length !== 11 || (digits[0] !== '7' && digits[0] !== '8')) {
+      throw new Error('Пожалуйста, введите полный номер телефона из 11 цифр (+7 XXX XXX-XX-XX)');
+    }
+    const formattedPhone = `+7 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7, 9)}-${digits.slice(9, 11)}`;
     let clients = MockDB.get('clients', []);
-    let client = clients.find(c => c.phone === body.phone);
+    let client = clients.find(c => c.phone === formattedPhone || c.phone === body.phone);
     if (!client) {
       client = {
         id: clients.length + 1,
-        phone: body.phone,
+        phone: formattedPhone,
         name: body.name || '',
         visits_count: 0,
         free_haircuts_received: 0,
@@ -191,7 +203,7 @@ async function api(path, options = {}) {
     const cycleStep = (client.visits_count % 3) + 1;
     const isNextFree = (cycleStep === 3);
 
-    const orders = MockDB.get('orders', []).filter(o => o.client_phone === body.phone);
+    const orders = MockDB.get('orders', []).filter(o => o.client_phone === formattedPhone || o.client_phone === body.phone);
 
     return {
       client: {
@@ -206,10 +218,17 @@ async function api(path, options = {}) {
 
   // 4. Checkout
   if (path === '/api/checkout' && method === 'POST') {
+    const rawDigits = (body.phone || '').replace(/\D/g, '');
+    let digits = rawDigits;
+    if (digits.length === 10) digits = '7' + digits;
+    if (digits.length !== 11 || (digits[0] !== '7' && digits[0] !== '8')) {
+      throw new Error('Пожалуйста, введите полный номер телефона из 11 цифр (+7 XXX XXX-XX-XX)');
+    }
+    const formattedPhone = `+7 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7, 9)}-${digits.slice(9, 11)}`;
     let clients = MockDB.get('clients', []);
-    let client = clients.find(c => c.phone === body.phone);
+    let client = clients.find(c => c.phone === formattedPhone || c.phone === body.phone);
     if (!client) {
-      client = { id: clients.length + 1, phone: body.phone, name: body.name || '', visits_count: 0, free_haircuts_received: 0 };
+      client = { id: clients.length + 1, phone: formattedPhone, name: body.name || '', visits_count: 0, free_haircuts_received: 0 };
       clients.push(client);
     }
 
@@ -417,12 +436,17 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Format phone number dynamically
+// Format phone number dynamically (strict 11 digits format: +7 (XXX) XXX-XX-XX)
 function formatPhone(input) {
+  if (!input) return '';
   let numbers = input.replace(/\D/g, '');
+  if (!numbers) return '';
   if (numbers.startsWith('7') || numbers.startsWith('8')) {
     numbers = numbers.substring(1);
   }
+  // Cap at 10 national digits (total 11 digits with country code +7)
+  numbers = numbers.substring(0, 10);
+
   let res = '+7';
   if (numbers.length > 0) res += ' (' + numbers.substring(0, 3);
   if (numbers.length >= 4) res += ') ' + numbers.substring(3, 6);
@@ -435,18 +459,30 @@ let phoneDebounceTimer = null;
 function handlePhoneInput(val) {
   const formatted = formatPhone(val);
   const input = document.getElementById('client-phone-input');
-  if (input.value !== formatted) {
+  if (input && input.value !== formatted) {
     input.value = formatted;
   }
 
+  const digits = formatted.replace(/\D/g, '');
+  const badge = document.getElementById('phone-counter-badge');
+  if (badge) {
+    if (digits.length === 11) {
+      badge.textContent = '✓ 11 из 11 цифр';
+      badge.className = 'font-mono text-emerald-400 font-bold text-xs';
+    } else {
+      badge.textContent = `${digits.length} / 11 цифр`;
+      badge.className = 'font-mono text-gray-400 font-normal text-xs';
+    }
+  }
+
   clearTimeout(phoneDebounceTimer);
-  const digits = val.replace(/\D/g, '');
-  if (digits.length >= 10) {
+  if (digits.length === 11) {
     phoneDebounceTimer = setTimeout(() => {
       autoLookupClient(formatted);
-    }, 400);
+    }, 300);
   } else {
-    document.getElementById('live-loyalty-preview').classList.add('hidden');
+    const preview = document.getElementById('live-loyalty-preview');
+    if (preview) preview.classList.add('hidden');
   }
 }
 
@@ -455,8 +491,9 @@ function fillDemoPhone(phone, name) {
   playSound('click');
   const pInput = document.getElementById('client-phone-input');
   const nInput = document.getElementById('client-name-input');
-  pInput.value = phone;
-  nInput.value = name || '';
+  if (pInput) pInput.value = phone;
+  if (nInput) nInput.value = name || '';
+  handlePhoneInput(phone);
   autoLookupClient(phone, name);
 }
 
@@ -579,11 +616,18 @@ function renderLiveLoyaltyPreview(client) {
 
 async function checkClientAndProceed() {
   playSound('click');
-  const phone = document.getElementById('client-phone-input').value.trim();
-  const name = document.getElementById('client-name-input').value.trim();
+  const input = document.getElementById('client-phone-input');
+  const phone = input ? input.value.trim() : '';
+  const name = document.getElementById('client-name-input') ? document.getElementById('client-name-input').value.trim() : '';
+  const digits = phone.replace(/\D/g, '');
 
-  if (!phone || phone.length < 11) {
-    showToast('Пожалуйста, введите корректный номер телефона', 'error');
+  if (!phone || digits.length !== 11) {
+    showToast('Пожалуйста, введите полный номер телефона из 11 цифр (+7 XXX XXX-XX-XX)', 'error');
+    if (input) {
+      input.focus();
+      input.classList.add('border-red-500');
+      setTimeout(() => input.classList.remove('border-red-500'), 2500);
+    }
     return;
   }
 
@@ -598,7 +642,7 @@ async function checkClientAndProceed() {
     // Step 2 is choosing master FIRST!
     goToStep(2);
   } catch (err) {
-    showToast(err.message, 'error');
+    showToast(err.message || 'Ошибка проверки номера', 'error');
   }
 }
 
@@ -942,8 +986,15 @@ function closeReceiptModal() {
   state.selectedService = null;
   state.selectedMaster = null;
   state.currentClient = null;
-  document.getElementById('client-phone-input').value = '';
-  document.getElementById('client-name-input').value = '';
+  const pInput = document.getElementById('client-phone-input');
+  if (pInput) pInput.value = '';
+  const nInput = document.getElementById('client-name-input');
+  if (nInput) nInput.value = '';
+  const badge = document.getElementById('phone-counter-badge');
+  if (badge) {
+    badge.textContent = '0 / 11 цифр';
+    badge.className = 'font-mono text-gray-400 font-normal normal-case';
+  }
   document.getElementById('live-loyalty-preview').classList.add('hidden');
   goToStep(1);
 }
@@ -954,9 +1005,16 @@ function closeReceiptModal() {
 
 async function lookupLoyaltyCard() {
   playSound('click');
-  const phone = document.getElementById('loyalty-check-phone').value.trim();
-  if (!phone || phone.length < 6) {
-    showToast('Введите корректный номер телефона', 'error');
+  const input = document.getElementById('loyalty-check-phone');
+  const phone = input ? input.value.trim() : '';
+  const digits = phone.replace(/\D/g, '');
+  if (!phone || digits.length !== 11) {
+    showToast('Пожалуйста, введите полный номер телефона из 11 цифр (+7 XXX XXX-XX-XX)', 'error');
+    if (input) {
+      input.focus();
+      input.classList.add('border-red-500');
+      setTimeout(() => input.classList.remove('border-red-500'), 2500);
+    }
     return;
   }
 
@@ -969,7 +1027,7 @@ async function lookupLoyaltyCard() {
 
     renderLoyaltyCardResult(data.client, data.history);
   } catch (err) {
-    showToast(err.message, 'error');
+    showToast(err.message || 'Ошибка поиска карты', 'error');
   }
 }
 

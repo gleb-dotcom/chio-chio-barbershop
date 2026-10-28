@@ -168,17 +168,20 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(__dirname));
 
-// Helper to sanitize phone
+// Helper to sanitize phone strictly to 11 digits
 function sanitizePhone(raw) {
-  if (!raw) return '';
-  const digits = raw.replace(/\D/g, '');
-  if (digits.length === 11 && (digits[0] === '7' || digits[0] === '8')) {
-    return `+7 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7, 9)}-${digits.slice(9, 11)}`;
-  }
+  if (!raw) return null;
+  let digits = raw.replace(/\D/g, '');
   if (digits.length === 10) {
-    return `+7 (${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 8)}-${digits.slice(8, 10)}`;
+    digits = '7' + digits;
+  } else if (digits.length === 11 && digits[0] === '8') {
+    digits = '7' + digits.slice(1);
+  } else if (digits.length === 11 && digits[0] === '7') {
+    // Valid 11 digits with 7
+  } else {
+    return null;
   }
-  return raw.trim();
+  return `+7 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7, 9)}-${digits.slice(9, 11)}`;
 }
 
 // Admin Auth Middleware
@@ -235,8 +238,8 @@ app.post('/api/client/lookup', (req, res) => {
   let { phone, name } = req.body;
   const formattedPhone = sanitizePhone(phone);
 
-  if (!formattedPhone || formattedPhone.length < 6) {
-    return res.status(400).json({ error: 'Пожалуйста, введите корректный номер телефона' });
+  if (!formattedPhone) {
+    return res.status(400).json({ error: 'Пожалуйста, введите полный номер телефона из 11 цифр (+7 XXX XXX-XX-XX)' });
   }
 
   let client = db.prepare('SELECT * FROM clients WHERE phone = ?').get(formattedPhone);
@@ -285,7 +288,7 @@ app.post('/api/checkout', (req, res) => {
   const formattedPhone = sanitizePhone(phone);
 
   if (!formattedPhone) {
-    return res.status(400).json({ error: 'Укажите номер телефона клиента' });
+    return res.status(400).json({ error: 'Пожалуйста, введите полный номер телефона из 11 цифр (+7 XXX XXX-XX-XX)' });
   }
   if (!serviceId) {
     return res.status(400).json({ error: 'Выберите стрижку / услугу' });
